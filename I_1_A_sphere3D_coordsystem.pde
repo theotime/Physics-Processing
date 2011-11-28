@@ -7,104 +7,229 @@ Sphere_3D_display s3d;
 Sphere_latitude_display sLatD;
 Sphere_longitude_display sLonD;
 
+/*PFont f;
+f = createFont("Georgia", 18, true);
+textFont(f);
+*/
+
+int COLOR_WHITE = 255;
+int NBR_DAY = 24;
 
 void setup() {
   size(1080, 540, P3D);
   frameRate(30);
   smooth();
   
-  int MAIN_X = 0;
-  int MAIN_Y = 0;
+  int rayon = 100;
   
-  int LAT_X = 0;
-  int LAT_Y = 0;
+  int MAIN_X = width/2;
+  int MAIN_Y = height/2;
   
-  int LON_X = 0;
-  int LON_Y = 0;
+  int LAT_X = width/6;
+  int LAT_Y = height/4;
+  
+  int LON_X = width/2 + (width/2 - width/6);
+  int LON_Y = height/4;
+  
+  s3d = new Sphere_3D_display(rayon, MAIN_X, MAIN_Y);
+  sLatD = new Sphere_latitude_display(rayon, LAT_X, LAT_Y);
+  sLonD = new Sphere_longitude_display(rayon, LON_X, LON_Y);
 }
 
 void draw() {
+  background(COLOR_WHITE);
+  noFill();
+  
+  s3d.init();
+  s3d.drawLongitude();
+  s3d.drawLatitude();
+  s3d.displayCursor();
+  s3d.end();
+  
+  sLatD.init()
+  sLatD.display();
+  sLatD.end();
+  
+  sLonD.init()
+  sLonD.display();
+  sLonD.end();
+  
 }
 
 
-//// Classe abstraite ////
-//////////////////////////
+//// Classes abstraites ////
+////////////////////////////
 
 class Frame {
   
-  int x;
-  int y;
+  int x_init;
+  int y_init;
   
   Frame(int x_define, int y_define) {
-    x = x_define;
-    y = y_define;
+    x_init = x_define;
+    y_init = y_define;
   }
   
-  void go_to_coord() {
+  void init() {
+    // pmFrameInit
+    pushMatrix();
+    translate( x_init, y_init, 0 );
+  }
+  
+  void end() {
+    //pmFrameInit
+    popMatrix();
   }
 }
 
 class Sphere_obj extends Frame {
   
   int rayon;
-  Sphere_coord_sys s_coord_sys;
+  Coord_sys coord_sys;
   
-  Sphere_obj (int rayon_define) {
+  Sphere_obj (int rayon_define, int x_define, int y_define) {
+    super(x_define, y_define);
     rayon = rayon_define;
+    coord_sys = new Coord_sys();
   }
 }
 
 
-//// Classe concrete ////
-/////////////////////////
+//// Classes concretes ////
+///////////////////////////
 
-class Sphere_coord_sys {
+
+// interface pour utiliser un système de coordonées sphérique / polaire / cartésien
+class Coord_sys {
   
-  int OM;
+  // polaire & sphérique
+  int r;
   // _d -> utilisez cette var en degree
-  int alpha_latitude_d;
-  int beta_longitude_d;
+  float alpha_lat_d;
+  float beta_lon_d;
   
-  Sphere_coord_sys () {
-    OM = 0;
-    alpha_latitude_d = 0;
-    beta_longitude_d = 0;
+  // cartésien
+  float x;
+  float y;
+  float z;
+  
+  Coord_sys () {
+    r = 0;
+    alpha_lat_d = 0;
+    beta_lon_d = 0;
+    
+    x = 0;
+    y = 0;
+    z = 0;
+  }
+  
+  void update(int x_, int y_, int z_) {
+  }
+  
+  void update( float alpha_d, float beta_d, int r_ ) {
+    alpha_lat_d = alpha_d;
+    beta_lon_d = beta_d;
+    r = r_;
+  }
+  
+  // on a choisi ici le système géographe. les angles seront à intervalle [-2PI;2PI]
+  void convert_to_cartesian() {
+    x = r * sin(radians(beta_lon_d)) * cos(radians(alpha_lat_d));
+    y = r * sin(radians(alpha_lat_d));
+    z = r * cos(radians(beta_lon_d)) * cos(radians(alpha_lat_d));
+  }
+  
+  void convert_coord_to_spheric() {
   }
 }
+
 
 class Sphere_3D_display extends Sphere_obj {
   
-  Sphere_3D_display() {
+  Sphere_3D_display(int rayon_define, int x_define, int y_define) {
+    super(rayon_define, x_define, y_define);
   }
   
   void drawLatitude() {
-    int theta = 0;
     int h = 0;
+    
+    // pmDrawLon
+    pushMatrix();
+    
+    rotateX(HALF_PI);
+    ellipse( 0, 0, rayon*2, rayon*2);
+    
+    for( h=0; h < rayon; h += rayon/(NBR_DAY/2) ) {
+      pushMatrix();
+      translate(0, 0, h);
+      ellipse( 0, 0, compute_diameter(rayon, h), compute_diameter(rayon, h) );
+      popMatrix();
+    }
+    
+    for( h=0; abs(h) < rayon; h -= rayon/(NBR_DAY/2) ) {
+      pushMatrix();
+      translate(0, 0, h);
+      ellipse( 0, 0, compute_diameter(rayon, h), compute_diameter(rayon, h) );
+      popMatrix();
+    }
+    
+    // pmDrawLon
+    popMatrix();
   }
   
   void drawLongitude() {
-    int theta = 0;
+    int theta_d = 0; // _d -> utilisez cette var en degrée
+    
+    for( theta_d = 0; theta_d <= 180; theta_d += 15 ) {
+      pushMatrix();
+      rotateY(radians(theta_d));
+      ellipse(0, 0, rayon*2, rayon*2 );
+      popMatrix();
+    }
   }
   
   void displayCursor() {
-    int curs_x;
-    int curs_y;
+    float curs_x_lon_d; // _d degree
+    float curs_y_lat_d; // _d degree
+    
+    curs_x_lon_d = map( mouseX, 0, width, -90 -1, 90 +1);
+    curs_y_lat_d = map( mouseY, 0, height, -90 -1, 90 +1);
+    
+    
+    coord_sys.update(curs_y_lat_d, curs_x_lon_d, rayon);
+    coord_sys.convert_to_cartesian();
+    
+    pushMatrix();
+    translate( coord_sys.x, coord_sys.y, coord_sys.z );
+    sphere(5);
+    line(0, 0, -coord_sys.x, -coord_sys.y);
+    popMatrix();
+    
+  }
+  
+  // pythagore appliqué au rayon des cercles de diamètres inférieurs
+  float compute_diameter(int equator_rayon, int h ) {
+    return 2*sqrt( sq(rayon) - sq(h) );
   }
   
 }
 
+
 class Sphere_latitude_display extends Sphere_obj {
   
-  Sphere_latitde_display() {
+  Sphere_latitude_display(int rayon_define, int x_define, int y_define) {
+    super(rayon_define, x_define, y_define);
   }
   
   void display() {
   }
 }
 
+
 class Sphere_longitude_display extends Sphere_obj {
   
-  Sphere_longitude_display() {
+  Sphere_longitude_display(int rayon_define, int x_define, int y_define) {
+    super(rayon_define, x_define, y_define);
   }
   
   void display() {
