@@ -319,9 +319,9 @@ class Sphere_longitude_display extends Sphere_obj {
     // méridien fixé à l'heure du PC
     text("Méridien de référence : "+ 0 + "°" + hour() + "h" + minute(), 0, 0);
     if ( curs_x_lon_d <= 0 ) {
-      text("Latitude : angle beta "+ abs((int)curs_x_lon_d) + "°W " + local_h + "h" + local_m, 0, 30);
+      text("Longitude : angle beta "+ abs((int)curs_x_lon_d) + "°W " + local_h + "h" + local_m, 0, 30);
     } else {
-      text("Latitude : angle beta "+ abs((int)curs_x_lon_d) + "°E " + local_h + "h" + local_m, 0, 30);
+      text("Longitude : angle beta "+ abs((int)curs_x_lon_d) + "°E " + local_h + "h" + local_m, 0, 30);
     }
     
     noFill();
