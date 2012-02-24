@@ -1,4 +1,4 @@
-// Ce programme permet de visualiser la poussé d'archimède sur des objets de volume et densité différentes
+// Program to simulate the archimede principle with different volume & density in the same object
 
 Material mFloatingObject;
 
