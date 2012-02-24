@@ -1,7 +1,5 @@
-//// Ce programme a tendance à inventer la roue et cela est justifié :
-//// l'objectif de ce programme est avant tout d'apprendre processing, la physique
-//// et de comprendre tous les fonctionnements internes.
-
+//// This program show you how to use Spherical coordinate system
+//// in Geography in example with the Earth.
 
 Sphere_3D_display s3d;
 Sphere_latitude_display sLatD;
@@ -58,8 +56,8 @@ void draw() {
 }
 
 
-//// Classes abstraites ////
-////////////////////////////
+//// Abstract Class ////
+////////////////////////
 
 class Frame {
   
@@ -96,25 +94,25 @@ class Sphere_obj extends Frame {
 }
 
 
-//// Classes concretes ////
-///////////////////////////
+//// Instance Class ////
+////////////////////////
 
 
-// interface pour utiliser un système de coordonées sphérique / polaire / cartésien
+// interface to use cartesian / polar / spherical coordinate systems
 class Coord_sys {
   
-  // cartésien
+  // cartesian
   float x;
   float y;
   float z;
   
-  // sphérique
+  // spherical
   int r;
   // _d -> utilisez cette var en degree
   float alpha_lat_d;
   float beta_lon_d;
   
-  // polaire
+  // polar
   int p;
   float sigma_d;
   
@@ -142,7 +140,7 @@ class Coord_sys {
     sigma_d = sigma_d_;
   }
   
-  // on a choisi ici le système géographe. les angles seront à intervalle [-2PI;2PI]
+  // We choose Geographic coordinates
   void sph_convert_to_cartesian() {
     x = r * sin(radians(beta_lon_d)) * cos(radians(alpha_lat_d));
     y = r * sin(radians(alpha_lat_d));
@@ -190,7 +188,7 @@ class Sphere_3D_display extends Sphere_obj {
   }
   
   void drawLongitude() {
-    int theta_d = 0; // _d -> utilisez cette var en degrée
+    int theta_d = 0; // _d -> use this var in degree
     
     for( theta_d = 0; theta_d <= 180; theta_d += 15 ) {
       pushMatrix();
@@ -219,7 +217,7 @@ class Sphere_3D_display extends Sphere_obj {
     
   }
   
-  // pythagore appliqué au rayon des cercles de diamètres inférieurs
+  // pythagoras
   float compute_diameter(int equator_rayon, int h ) {
     return 2*sqrt( sq(rayon) - sq(h) );
   }
@@ -240,7 +238,7 @@ class Sphere_latitude_display extends Sphere_obj {
     curs_y_lat_d = map( mouseY, 0, height, -90 -1, 90 +1);
     
     
-    // on inverse le signe de l'angle pour pouvoir afficher sur la partie gauche // juste plus joli
+    // we inverse the angle sign to display on the left part
     coord_sys.update(-curs_y_lat_d, rayon + 30);
     coord_sys.pol_convert_to_cartesian();
     
@@ -250,7 +248,7 @@ class Sphere_latitude_display extends Sphere_obj {
     cursor_y = -coord_sys.y;
     cursor_x = -coord_sys.x;
     
-    // on affiche les rayons du Soleil
+    // display sunsets
     for( int i = 0; i <= (NBR_DAY/2); i++ ) {
       coord_sys.update(i*(360/NBR_DAY) + degrees(HALF_PI), rayon);
       coord_sys.pol_convert_to_cartesian();
@@ -269,9 +267,9 @@ class Sphere_latitude_display extends Sphere_obj {
     textAlign(CENTER);
  
     if( curs_y_lat_d <= 0 ) {
-      text("Latitude : angle alpha "+abs((int)curs_y_lat_d)+"°N", 0, rayon+30);
+      text("Latitude : alpha angle "+abs((int)curs_y_lat_d)+"°N", 0, rayon+30);
     } else {
-      text("Latitude : angle alpha "+abs((int)curs_y_lat_d)+"°S", 0, rayon+30);
+      text("Latitude : alpha angle "+abs((int)curs_y_lat_d)+"°S", 0, rayon+30);
     }
     noFill();
   }
@@ -316,12 +314,12 @@ class Sphere_longitude_display extends Sphere_obj {
     fill(0);
     textAlign(CENTER);
     
-    // méridien fixé à l'heure du PC
-    text("Méridien de référence : "+ 0 + "°" + hour() + "h" + minute(), 0, 0);
+    // meridian on the PC clock
+    text("Reference Meridian : "+ 0 + "°" + hour() + "h" + minute(), 0, 0);
     if ( curs_x_lon_d <= 0 ) {
-      text("Longitude : angle beta "+ abs((int)curs_x_lon_d) + "°W " + local_h + "h" + local_m, 0, 30);
+      text("Longitude : beta angle "+ abs((int)curs_x_lon_d) + "°W " + local_h + "h" + local_m, 0, 30);
     } else {
-      text("Longitude : angle beta "+ abs((int)curs_x_lon_d) + "°E " + local_h + "h" + local_m, 0, 30);
+      text("Longitude : beta angle "+ abs((int)curs_x_lon_d) + "°E " + local_h + "h" + local_m, 0, 30);
     }
     
     noFill();
